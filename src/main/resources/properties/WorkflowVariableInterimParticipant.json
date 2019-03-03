@@ -1,0 +1,22 @@
+[
+  {
+    title : 'Edit @@interimParticipant.interimWorkflowVaribleParticipant@@',
+    properties :[
+      {
+        name : 'participantPlugin',
+        label :'@@interimParticipant.participantPlugin@@',
+        type : 'elementselect',
+        required :'true',
+        options_ajax : '[CONTEXT_PATH]/web/property/json/getElements?classname=org.joget.workflow.model.ParticipantPlugin',
+        url : '[CONTEXT_PATH]/web/property/json[APP_PATH]/getPropertyOptions'
+      },
+      {
+        name : 'variableId',
+        label : '@@console.app.process.common.label.variableId@@',
+        type : 'selectbox',
+        required : 'true',
+        options_ajax : '[CONTEXT_PATH]/web/json/app[APP_PATH]/plugin/%s/service'
+      }
+    ]
+  }
+]
