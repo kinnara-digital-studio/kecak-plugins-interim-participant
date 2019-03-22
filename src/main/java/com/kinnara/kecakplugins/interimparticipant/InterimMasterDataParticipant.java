@@ -82,6 +82,7 @@ public class InterimMasterDataParticipant extends DefaultParticipantPlugin {
                         return Collections.singletonList(originalParticipant);
                     } else {
                         // interim user(s) found
+                        LogUtil.info(getClassName(), "Switching user [" + originalParticipant + "] with [" + interimParticipant + "]");
                         return interimParticipant;
                     }
                 })
