@@ -15,25 +15,26 @@ import java.util.Date;
 import java.util.Map;
 
 public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
-    private final static DateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private final static String FIELD_ORIGINAL_PARTICIPANT = "employee";
-    private final static String FIELD_INTERIM_PARTICIPANT = "interim_employee";
+
+    DateFormat dateFormat = new SimpleDateFormat("HH:mm");
+
+    InterimMasterDataParticipant interimMasterDataParticipant = new InterimMasterDataParticipant();
 
     @Override
     public boolean filter(@Nonnull Map<String, Object> map) {
-        return true;
+        return "00:00".equals(dateFormat.format(new Date()));
     }
 
     @Override
     public void jobRun(@Nonnull Map<String, Object> map) {
-        Date now = new Date();
-        LogUtil.info(getClassName(), "Looking for interim employee at date ["+sDateFormat.format(now)+"]");
+        // cari orang2 yang hari ini cuti
 
-        ApplicationContext applicationContext = AppUtil.getApplicationContext();
-        FormDataDao formDataDao = (FormDataDao) applicationContext.getBean("formDataDao");
-        PluginManager pluginManager = (PluginManager) map.get("pluginManager");
-        WorkflowActivity workflowActivity = (WorkflowActivity) map.get("workflowActivity");
+        // cari berdasarkan list orang semua assignment yang masih aktif
 
+        // simpan semua assignment ke history
+
+        // reassign semua assignment ke orang baru (pengganti)
+        interimMasterDataParticipant.getActivityAssignments();
     }
 
     @Override
