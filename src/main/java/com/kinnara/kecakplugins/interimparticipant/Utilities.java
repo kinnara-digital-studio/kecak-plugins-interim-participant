@@ -16,9 +16,9 @@ import org.joget.workflow.model.service.WorkflowManager;
 import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Utilities {
     public final static String APPLICATION_ID = "InterimParticipant";
@@ -82,14 +82,14 @@ public class Utilities {
      * @param <T>
      * @return
      */
-    public static <T> T getPluginObject(Map<String, Object> elementSelect, PluginManager pluginManager, Map additionalProperties) {
+    public static <T extends PropertyEditable> T getPluginObject(Map<String, Object> elementSelect, PluginManager pluginManager, Map additionalProperties) {
         if(elementSelect == null)
             return null;
 
-        AppDefinition appDef = AppUtil.getCurrentAppDefinition();
-
         String className = (String)elementSelect.get("className");
         Map<String, Object> properties = (Map<String, Object>)elementSelect.get("properties");
+
+        LogUtil.info(Utilities.class.getName(), "properties ["+properties.entrySet().stream().map(e -> e.getKey() + "->" + e.getValue()).collect(Collectors.joining(";"))+"]");
 
         T  plugin = (T) pluginManager.getPlugin(className);
         if(plugin == null) {
@@ -97,10 +97,10 @@ public class Utilities {
             return null;
         }
 
-        if(properties != null && plugin instanceof PropertyEditable) {
-            properties.putAll(additionalProperties);
-            ((PropertyEditable) plugin).setProperties(properties);
-        }
+        properties.forEach(plugin::setProperty);
+        plugin.getProperties().putAll(additionalProperties);
+
+        LogUtil.info(Utilities.class.getName(), Optional.ofNullable(plugin.getProperties()).map(Map::entrySet).orElse(new HashSet<>()).stream().map(e -> e.getKey() + "->" + e.getValue()).collect(Collectors.joining("||")));
 
         return plugin;
     }

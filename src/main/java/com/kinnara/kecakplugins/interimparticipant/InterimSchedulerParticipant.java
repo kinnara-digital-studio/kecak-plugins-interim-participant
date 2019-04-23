@@ -13,10 +13,10 @@ import org.springframework.context.ApplicationContext;
 import javax.annotation.Nonnull;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.Optional.ofNullable;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
     private final static DateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -39,13 +39,13 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
 
         // cari orang2 yang hari ini cuti
         Date now = new Date();
-        LogUtil.info(getClassName(), "Looking for interim employee at date ["+sDateFormat.format(now)+"]");
-            .map(originalParticipant -> {
-            List<String> interimParticipant = Optional
-            // get from master data
-            .ofNullable(formDataDao.find(formParticipantMaster, "WHERE e.customProperties.active = 'true' AND ? BETWEEN e.customProperties.date_from AND e.customProperties.date_to", new String[] {sDateFormat.format(now)}, null, null, null, null))
-            .orElse(new FormRowSet())
-            .stream()
+//        LogUtil.info(getClassName(), "Looking for interim employee at date ["+sDateFormat.format(now)+"]");
+//            .map(originalParticipant -> {
+//            List<String> interimParticipant = Optional
+//            // get from master data
+//            .ofNullable(formDataDao.find(formParticipantMaster, "WHERE e.customProperties.active = 'true' AND ? BETWEEN e.customProperties.date_from AND e.customProperties.date_to", new String[] {sDateFormat.format(now)}, null, null, null, null))
+//            .orElse(new FormRowSet())
+//            .stream();
 
         // cari berdasarkan list orang semua assignment yang masih aktif
 

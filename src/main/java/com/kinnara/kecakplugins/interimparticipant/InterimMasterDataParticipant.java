@@ -51,12 +51,14 @@ public class InterimMasterDataParticipant extends DefaultParticipantPlugin {
         Form formParticipantMaster = Utilities.generateParticipantMasterForm();
 
         // generate participant mapping plugin
-        ParticipantPlugin participantPlugin = Utilities.getParticipantPlugin((Map<String, Object>) getProperty("participantPlugin"), pluginManager, workflowActivity);
+        ParticipantPlugin participantPlugin = Utilities.getParticipantPlugin((Map<String, Object>) map.get("participantPlugin"), pluginManager, workflowActivity);
 
-        return Optional.ofNullable(participantPlugin.getActivityAssignments(map))
+        return Optional.ofNullable(participantPlugin)
+                .map(p -> p.getActivityAssignments(p.getProperties()))
                 .orElse(Collections.emptyList())
                 .stream()
 
+                .peek(s -> LogUtil.info(getClassName(), "original participant ["+s+"]"))
                 // map actual user to interim user
                 .map(originalParticipant -> {
                     List<String> interimParticipant = Optional
