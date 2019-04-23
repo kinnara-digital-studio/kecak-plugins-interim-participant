@@ -3,6 +3,8 @@ package com.kinnara.kecakplugins.interimparticipant;
 import org.joget.apps.app.model.DefaultSchedulerPlugin;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.form.dao.FormDataDao;
+import org.joget.apps.form.model.Form;
+import org.joget.apps.form.model.FormRowSet;
 import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.joget.workflow.model.WorkflowActivity;
@@ -11,14 +13,14 @@ import org.springframework.context.ApplicationContext;
 import javax.annotation.Nonnull;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Optional.ofNullable;
 
 public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
-
+    private final static DateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     DateFormat dateFormat = new SimpleDateFormat("HH:mm");
-
-    InterimMasterDataParticipant interimMasterDataParticipant = new InterimMasterDataParticipant();
 
     @Override
     public boolean filter(@Nonnull Map<String, Object> map) {
@@ -27,14 +29,30 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
 
     @Override
     public void jobRun(@Nonnull Map<String, Object> map) {
+        ApplicationContext applicationContext = AppUtil.getApplicationContext();
+        FormDataDao formDataDao = (FormDataDao) applicationContext.getBean("formDataDao");
+        PluginManager pluginManager = (PluginManager) map.get("pluginManager");
+        WorkflowActivity workflowActivity = (WorkflowActivity) map.get("workflowActivity");
+
+        // generate master data form
+        Form formParticipantMaster = Utilities.generateParticipantMasterForm();
+
         // cari orang2 yang hari ini cuti
+        Date now = new Date();
+        LogUtil.info(getClassName(), "Looking for interim employee at date ["+sDateFormat.format(now)+"]");
+            .map(originalParticipant -> {
+            List<String> interimParticipant = Optional
+            // get from master data
+            .ofNullable(formDataDao.find(formParticipantMaster, "WHERE e.customProperties.active = 'true' AND ? BETWEEN e.customProperties.date_from AND e.customProperties.date_to", new String[] {sDateFormat.format(now)}, null, null, null, null))
+            .orElse(new FormRowSet())
+            .stream()
 
         // cari berdasarkan list orang semua assignment yang masih aktif
 
         // simpan semua assignment ke history
 
         // reassign semua assignment ke orang baru (pengganti)
-        interimMasterDataParticipant.getActivityAssignments();
+
     }
 
     @Override
