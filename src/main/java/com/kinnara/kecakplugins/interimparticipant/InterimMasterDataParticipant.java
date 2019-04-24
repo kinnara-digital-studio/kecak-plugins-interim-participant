@@ -19,9 +19,6 @@ import java.util.stream.Collectors;
 public class InterimMasterDataParticipant extends DefaultParticipantPlugin {
     private final static DateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    private final static String FIELD_ORIGINAL_PARTICIPANT = "employee";
-    private final static String FIELD_INTERIM_PARTICIPANT = "interim_employee";
-
     @Override
     public String getName() {
         return "Interim Master Data Participant";
@@ -63,15 +60,15 @@ public class InterimMasterDataParticipant extends DefaultParticipantPlugin {
                 .map(originalParticipant -> {
                     List<String> interimParticipant = Optional
                             // get from master data
-                            .ofNullable(formDataDao.find(formParticipantMaster, "WHERE e.customProperties."+FIELD_ORIGINAL_PARTICIPANT+" LIKE '%'||?||'%' AND e.customProperties.active = 'true' AND ? BETWEEN e.customProperties.date_from AND e.customProperties.date_to", new String[] {originalParticipant, sDateFormat.format(now)}, null, null, null, null))
+                            .ofNullable(formDataDao.find(formParticipantMaster, "WHERE e.customProperties."+ Utilities.FIELD_ORIGINAL_PARTICIPANT+" LIKE '%'||?||'%' AND e.customProperties.active = 'true' AND ? BETWEEN e.customProperties.date_from AND e.customProperties.date_to", new String[] {originalParticipant, sDateFormat.format(now)}, null, null, null, null))
                             .orElse(new FormRowSet())
                             .stream()
 
                             // check if current actual user is in the mapping data
-                            .filter(formRow -> Arrays.asList(Optional.ofNullable(formRow.getProperty(FIELD_ORIGINAL_PARTICIPANT)).orElse("").split(";")).contains(originalParticipant))
+                            .filter(formRow -> Arrays.asList(Optional.ofNullable(formRow.getProperty(Utilities.FIELD_ORIGINAL_PARTICIPANT)).orElse("").split(";")).contains(originalParticipant))
 
                             // get the interim user(s)
-                            .map(formRow -> formRow.getProperty(FIELD_INTERIM_PARTICIPANT))
+                            .map(formRow -> formRow.getProperty(Utilities.FIELD_INTERIM_PARTICIPANT))
 
                             .filter(Objects::nonNull)
                             .map(s -> s.split(";"))

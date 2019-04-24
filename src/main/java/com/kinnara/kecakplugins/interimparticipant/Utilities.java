@@ -24,6 +24,9 @@ public class Utilities {
     public final static String APPLICATION_ID = "InterimParticipant";
     public final static String FORM_PARTICIPANT_MASTER = "participant_master";
 
+    public final static String FIELD_ORIGINAL_PARTICIPANT = "employee";
+    public final static String FIELD_INTERIM_PARTICIPANT = "interim_employee";
+
     private final static Map<String, Form> formCache = new WeakHashMap<>();
 
     public static Form generateParticipantMasterForm() {

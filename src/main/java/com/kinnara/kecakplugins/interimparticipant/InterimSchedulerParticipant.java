@@ -6,18 +6,19 @@ import org.joget.apps.form.dao.FormDataDao;
 import org.joget.apps.form.model.Form;
 import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
-import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.joget.workflow.model.WorkflowActivity;
+import org.joget.workflow.model.WorkflowAssignment;
+import org.joget.workflow.model.service.WorkflowManager;
+import org.joget.workflow.model.service.WorkflowUserManager;
 import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nonnull;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
     private final static DateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -42,11 +43,39 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
         Date now = new Date();
         FormRowSet formRows = formDataDao.find(formParticipantMaster, "WHERE e.customProperties.active = 'true' AND ? BETWEEN e.customProperties.date_from AND e.customProperties.date_to", new String[] {sDateFormat.format(now)}, null, null, null, null);
         if(formRows == null || formRows.isEmpty()) {
-            // stop scheduler
+            // stop scheduler, jangan proses lebih lanjut
             return;
         }
 
-        // cari berdasarkan list orang semua assignment yang masih aktif
+        // cari berdasarkan list orang, dapatkan semua assignment yang masih aktif
+        WorkflowUserManager workflowUserManager = (WorkflowUserManager) applicationContext.getBean("workflowUserManager");
+        WorkflowManager workflowManager = (WorkflowManager) applicationContext.getBean("workflowManager");
+        for(FormRow row : formRows) {
+            // get current user
+            String username = row.getProperty(Utilities.FIELD_ORIGINAL_PARTICIPANT);
+            if(username == null) {
+                continue;
+            }
+
+            // set thread user
+            workflowUserManager.setCurrentThreadUser(username);
+
+            // ambil assignments
+            Collection<WorkflowAssignment> assignments = workflowManager.getAssignmentListLite(null, null, null, null, null, null, null, null);
+            if(assignments == null) {
+                continue;
+            }
+
+            // dapatkan interim user
+            String interimUsername = row.getProperty(Utilities.FIELD_INTERIM_PARTICIPANT);
+            if(interimUsername == null) {
+                continue;
+            }
+
+            // reassign semua assignment
+            for(WorkflowAssignment assignment : assignments)
+                workflowManager.assignmentReassign(null, null, assignment.getActivityId(), username, interimUsername);
+        }
 
         // simpan semua assignment ke history
 
