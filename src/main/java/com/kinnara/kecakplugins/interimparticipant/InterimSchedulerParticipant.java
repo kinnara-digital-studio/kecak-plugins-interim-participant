@@ -72,14 +72,16 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
                 continue;
             }
 
-            // reassign semua assignment
-            for(WorkflowAssignment assignment : assignments)
+            // untuk semua assignment
+            for(WorkflowAssignment assignment : assignments) {
+                // simpan semua assignment ke history
+
+                // reassign semua assignment
                 workflowManager.assignmentReassign(null, null, assignment.getActivityId(), username, interimUsername);
+            }
         }
 
-        // simpan semua assignment ke history
 
-        // reassign semua assignment ke orang baru (pengganti)
 
     }
 
