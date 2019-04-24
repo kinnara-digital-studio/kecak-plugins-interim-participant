@@ -4,6 +4,7 @@ import org.joget.apps.app.model.DefaultSchedulerPlugin;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.form.dao.FormDataDao;
 import org.joget.apps.form.model.Form;
+import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
 import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
@@ -39,13 +40,11 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
 
         // cari orang2 yang hari ini cuti
         Date now = new Date();
-//        LogUtil.info(getClassName(), "Looking for interim employee at date ["+sDateFormat.format(now)+"]");
-//            .map(originalParticipant -> {
-//            List<String> interimParticipant = Optional
-//            // get from master data
-//            .ofNullable(formDataDao.find(formParticipantMaster, "WHERE e.customProperties.active = 'true' AND ? BETWEEN e.customProperties.date_from AND e.customProperties.date_to", new String[] {sDateFormat.format(now)}, null, null, null, null))
-//            .orElse(new FormRowSet())
-//            .stream();
+        FormRowSet formRows = formDataDao.find(formParticipantMaster, "WHERE e.customProperties.active = 'true' AND ? BETWEEN e.customProperties.date_from AND e.customProperties.date_to", new String[] {sDateFormat.format(now)}, null, null, null, null);
+        if(formRows == null || formRows.isEmpty()) {
+            // stop scheduler
+            return;
+        }
 
         // cari berdasarkan list orang semua assignment yang masih aktif
 
