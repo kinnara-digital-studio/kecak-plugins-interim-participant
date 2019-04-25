@@ -127,7 +127,6 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
 
     @Override
     public String getPropertyOptions() {
-        String[] args = new String[] { WorkflowVariablesApi.class.getName() };
-        return AppUtil.readPluginResource(getClassName(), "/properties/InterimSchedulerParticipant.json", args, false, "/messages/InterimSchedulerParticipant");
+        return "";
     }
 }
