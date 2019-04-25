@@ -18,7 +18,6 @@ import org.springframework.context.ApplicationContext;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Utilities {
     public final static String APPLICATION_ID = "InterimParticipant";

@@ -96,7 +96,7 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
 
                 // reassign semua assignment
                 LogUtil.info(InterimSchedulerParticipant.class.getName(), "------------" + assignment.getActivityId() + "--" + username + "---" + interimUsername);
-                workflowManager.assignmentReassign(assignment.getProcessDefId(), assignment.getProcessId(), assignment.getActivityId(), username, interimUsername);
+                workflowManager.assignmentReassign(assignment.getProcessDefId(), assignment.getProcessId(), assignment.getActivityId(), interimUsername, username);
             }
         }
 
