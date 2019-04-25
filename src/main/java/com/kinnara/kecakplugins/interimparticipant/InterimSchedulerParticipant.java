@@ -4,6 +4,7 @@ import org.joget.apps.app.model.DefaultSchedulerPlugin;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.form.dao.FormDataDao;
 import org.joget.apps.form.model.Form;
+import org.joget.apps.form.model.FormData;
 import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
 import org.joget.plugin.base.PluginManager;
@@ -19,6 +20,8 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+
+import static com.kinnara.kecakplugins.interimparticipant.Utilities.*;
 
 public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
     private final static DateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -39,6 +42,9 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
         // generate master data form
         Form formParticipantMaster = Utilities.generateParticipantMasterForm();
 
+        // generate history data form
+        Form formAssignmentHistory = Utilities.generateAssignmentHistoryForm();
+
         // cari orang2 yang hari ini cuti
         Date now = new Date();
         FormRowSet formRows = formDataDao.find(formParticipantMaster, "WHERE e.customProperties.active = 'true' AND ? BETWEEN e.customProperties.date_from AND e.customProperties.date_to", new String[] {sDateFormat.format(now)}, null, null, null, null);
@@ -50,9 +56,9 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
         // cari berdasarkan list orang, dapatkan semua assignment yang masih aktif
         WorkflowUserManager workflowUserManager = (WorkflowUserManager) applicationContext.getBean("workflowUserManager");
         WorkflowManager workflowManager = (WorkflowManager) applicationContext.getBean("workflowManager");
-        for(FormRow row : formRows) {
+        for(FormRow rowParticipant : formRows) {
             // get current user
-            String username = row.getProperty(Utilities.FIELD_ORIGINAL_PARTICIPANT);
+            String username = rowParticipant.getProperty(Utilities.FIELD_ORIGINAL_PARTICIPANT);
             if(username == null) {
                 continue;
             }
@@ -67,14 +73,23 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
             }
 
             // dapatkan interim user
-            String interimUsername = row.getProperty(Utilities.FIELD_INTERIM_PARTICIPANT);
+            String interimUsername = rowParticipant.getProperty(Utilities.FIELD_INTERIM_PARTICIPANT);
             if(interimUsername == null) {
                 continue;
             }
 
             // untuk semua assignment
             for(WorkflowAssignment assignment : assignments) {
+
                 // simpan semua assignment ke history
+                FormRowSet fieldHistory = new FormRowSet();
+                FormRow rowHistory = new FormRow();
+                rowHistory.put(FIELD_PROCESS_ID,assignment.getActivityId());
+                rowHistory.put(FIELD_ORIGIN,username);
+                rowHistory.put(FIELD_REASSIGN_TO,interimUsername);
+                fieldHistory.add(rowHistory);
+                formAssignmentHistory.getStoreBinder().store(formAssignmentHistory, fieldHistory , new FormData());
+
 
                 // reassign semua assignment
                 workflowManager.assignmentReassign(null, null, assignment.getActivityId(), username, interimUsername);

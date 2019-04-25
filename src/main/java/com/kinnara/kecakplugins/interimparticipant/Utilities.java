@@ -23,14 +23,22 @@ import java.util.stream.Stream;
 public class Utilities {
     public final static String APPLICATION_ID = "InterimParticipant";
     public final static String FORM_PARTICIPANT_MASTER = "participant_master";
+    public final static String FORM_ASSIGNMENT_HISTORY = "assignment_history";
 
     public final static String FIELD_ORIGINAL_PARTICIPANT = "employee";
     public final static String FIELD_INTERIM_PARTICIPANT = "interim_employee";
+    public final static String FIELD_PROCESS_ID = "process_id";
+    public final static String FIELD_ORIGIN = "origin";
+    public final static String FIELD_REASSIGN_TO = "reassign_to"; //konstan
+
 
     private final static Map<String, Form> formCache = new WeakHashMap<>();
 
     public static Form generateParticipantMasterForm() {
         return generateForm(APPLICATION_ID, WorkflowManager.LATEST, FORM_PARTICIPANT_MASTER);
+    }
+    public static Form generateAssignmentHistoryForm(){
+        return generateForm(APPLICATION_ID, WorkflowManager.LATEST, FORM_ASSIGNMENT_HISTORY);
     }
 
     public static Form generateForm(String appId, String appVersion, String formDefId) {
