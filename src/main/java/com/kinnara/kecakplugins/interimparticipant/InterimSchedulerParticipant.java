@@ -7,6 +7,7 @@ import org.joget.apps.form.model.Form;
 import org.joget.apps.form.model.FormData;
 import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
+import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.joget.workflow.model.WorkflowActivity;
 import org.joget.workflow.model.WorkflowAssignment;
@@ -29,7 +30,8 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
 
     @Override
     public boolean filter(@Nonnull Map<String, Object> map) {
-        return "00:00".equals(dateFormat.format(new Date()));
+//        return "00:00".equals(dateFormat.format(new Date()));
+        return true;
     }
 
     @Override
@@ -82,17 +84,19 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
             for(WorkflowAssignment assignment : assignments) {
 
                 // simpan semua assignment ke history
-                FormRowSet fieldHistory = new FormRowSet();
+                FormRowSet rowsetHistory = new FormRowSet();
                 FormRow rowHistory = new FormRow();
                 rowHistory.put(FIELD_PROCESS_ID,assignment.getActivityId());
                 rowHistory.put(FIELD_ORIGIN,username);
                 rowHistory.put(FIELD_REASSIGN_TO,interimUsername);
-                fieldHistory.add(rowHistory);
-                formAssignmentHistory.getStoreBinder().store(formAssignmentHistory, fieldHistory , new FormData());
+                rowsetHistory.add(rowHistory);
+                formAssignmentHistory.getStoreBinder().store(formAssignmentHistory, rowsetHistory , new FormData());
+
 
 
                 // reassign semua assignment
-                workflowManager.assignmentReassign(null, null, assignment.getActivityId(), username, interimUsername);
+                LogUtil.info(InterimSchedulerParticipant.class.getName(), "------------" + assignment.getActivityId() + "--" + username + "---" + interimUsername);
+                workflowManager.assignmentReassign(assignment.getProcessDefId(), assignment.getProcessId(), assignment.getActivityId(), username, interimUsername);
             }
         }
 
