@@ -86,7 +86,8 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
                 // simpan semua assignment ke history
                 FormRowSet rowsetHistory = new FormRowSet();
                 FormRow rowHistory = new FormRow();
-                rowHistory.put(FIELD_PROCESS_ID,assignment.getActivityId());
+                rowHistory.put(FIELD_PROCESS_ID,assignment.getProcessId());
+                rowHistory.put(FIELD_ACTIVITY_ID,assignment.getActivityId());
                 rowHistory.put(FIELD_ORIGIN,username);
                 rowHistory.put(FIELD_REASSIGN_TO,interimUsername);
                 rowsetHistory.add(rowHistory);
