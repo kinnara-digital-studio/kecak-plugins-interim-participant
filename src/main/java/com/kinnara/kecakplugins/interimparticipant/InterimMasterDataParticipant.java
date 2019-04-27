@@ -55,7 +55,6 @@ public class InterimMasterDataParticipant extends DefaultParticipantPlugin {
                 .orElse(Collections.emptyList())
                 .stream()
 
-                .peek(s -> LogUtil.info(getClassName(), "original participant ["+s+"]"))
                 // map actual user to interim user
                 .map(originalParticipant -> {
                     List<String> interimParticipant = Optional
