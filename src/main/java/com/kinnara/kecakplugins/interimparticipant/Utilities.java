@@ -27,6 +27,7 @@ public class Utilities {
     public final static String FIELD_ORIGINAL_PARTICIPANT = "employee";
     public final static String FIELD_INTERIM_PARTICIPANT = "interim_employee";
     public final static String FIELD_PROCESS_ID = "process_id";
+    public final static String FIELD_ACTIVITY_ID = "activity_id";
     public final static String FIELD_ORIGIN = "origin";
     public final static String FIELD_REASSIGN_TO = "reassign_to"; //konstan
 
