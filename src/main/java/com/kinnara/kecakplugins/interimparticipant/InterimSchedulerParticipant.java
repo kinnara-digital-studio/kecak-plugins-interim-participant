@@ -27,6 +27,15 @@ import static com.kinnara.kecakplugins.interimparticipant.Utilities.*;
 public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
     private final static DateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     DateFormat dateFormat = new SimpleDateFormat("HH:mm");
+    Date now = new Date();
+    ApplicationContext applicationContext = AppUtil.getApplicationContext();
+    FormDataDao formDataDao = (FormDataDao) applicationContext.getBean("formDataDao");
+    // generate master data form
+    Form formParticipantMaster = Utilities.generateParticipantMasterForm();
+    // generate history data form
+//        Form formAssignmentHistory = Utilities.generateAssignmentHistoryForm();
+    WorkflowUserManager workflowUserManager = (WorkflowUserManager) applicationContext.getBean("workflowUserManager");
+    WorkflowManager workflowManager = (WorkflowManager) applicationContext.getBean("workflowManager");
 
     @Override
     public boolean filter(@Nonnull Map<String, Object> map) {
@@ -36,28 +45,17 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
 
     @Override
     public void jobRun(@Nonnull Map<String, Object> map) {
-        ApplicationContext applicationContext = AppUtil.getApplicationContext();
-        FormDataDao formDataDao = (FormDataDao) applicationContext.getBean("formDataDao");
-        PluginManager pluginManager = (PluginManager) map.get("pluginManager");
-        WorkflowActivity workflowActivity = (WorkflowActivity) map.get("workflowActivity");
-
-        // generate master data form
-        Form formParticipantMaster = Utilities.generateParticipantMasterForm();
-
-        // generate history data form
-//        Form formAssignmentHistory = Utilities.generateAssignmentHistoryForm();
-
+        reassignToInterim();
+        returnToUser();
+    }
+    public void reassignToInterim(){
         // cari orang2 yang hari ini cuti
-        Date now = new Date();
         FormRowSet formRowsValidDate = formDataDao.find(formParticipantMaster, "WHERE e.customProperties.active = 'true' AND ? BETWEEN e.customProperties.date_from AND e.customProperties.date_to", new String[]{sDateFormat.format(now)}, null, null, null, null);
         if (formRowsValidDate == null || formRowsValidDate.isEmpty()) {
             // stop scheduler, jangan proses lebih lanjut
             return  ;
         }
-
         // cari berdasarkan list orang, dapatkan semua assignment yang masih aktif
-        WorkflowUserManager workflowUserManager = (WorkflowUserManager) applicationContext.getBean("workflowUserManager");
-        WorkflowManager workflowManager = (WorkflowManager) applicationContext.getBean("workflowManager");
         for (FormRow rowParticipant : formRowsValidDate) {
             // get current user
             String username = rowParticipant.getProperty(Utilities.FIELD_ORIGINAL_PARTICIPANT);
@@ -101,6 +99,9 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
                 workflowManager.reevaluateAssignmentsForActivity(assignment.getActivityId());
             }
         }
+    }
+
+    public void returnToUser(){
         // cari date yang tidak valid
         FormRowSet formRowsNotValid = formDataDao.find(formParticipantMaster, "WHERE e.customProperties.active = ? AND e.customProperties.date_to < ?", new String[]{"true", sDateFormat.format(now)}, null, null, null, null);
         if (formRowsNotValid == null || formRowsNotValid.isEmpty()) {
@@ -112,22 +113,14 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
             rowActive.setProperty(CHECKBOX_ACTIVE, "false");
             String interimUser = rowActive.getProperty(FIELD_INTERIM_PARTICIPANT);
             String[] interimSplit =  interimUser.split(";");
-            for (String username : interimSplit) {
+                for (String username : interimSplit) {
                 workflowManager.reevaluateAssignmentsForUser(username);
-            }
+                }
         }
         // save rowActive
         formDataDao.saveOrUpdate(formParticipantMaster, formRowsNotValid);
 
         //reevaluate semua activity yang ada di interim master data
-
-
-    }
-    public void reassignToInterim(){
-
-    }
-    public void reassignToUser(){
-        
     }
     @Override
     public String getName() {
