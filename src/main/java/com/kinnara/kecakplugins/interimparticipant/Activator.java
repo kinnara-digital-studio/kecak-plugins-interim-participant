@@ -14,6 +14,7 @@ public class Activator implements BundleActivator {
         registrationList = new ArrayList<ServiceRegistration>();
 
         //Register plugin here
+        registrationList.add(context.registerService(InterimSchedulerParticipant.class.getName(), new InterimSchedulerParticipant(), null));
         registrationList.add(context.registerService(InterimMasterDataParticipant.class.getName(), new InterimMasterDataParticipant(), null));
         registrationList.add(context.registerService(InterimWorkflowVariableParticipant.class.getName(), new InterimWorkflowVariableParticipant(), null));
         registrationList.add(context.registerService(WorkflowVariablesApi.class.getName(), new WorkflowVariablesApi(), null));

@@ -16,19 +16,31 @@ import org.joget.workflow.model.service.WorkflowManager;
 import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Utilities {
     public final static String APPLICATION_ID = "InterimParticipant";
     public final static String FORM_PARTICIPANT_MASTER = "participant_master";
+//    public final static String FORM_ASSIGNMENT_HISTORY = "assignment_history";
+
+    public final static String FIELD_ORIGINAL_PARTICIPANT = "employee";
+    public final static String FIELD_INTERIM_PARTICIPANT = "interim_employee";
+    public final static String CHECKBOX_ACTIVE = "active";
+//    public final static String FIELD_PROCESS_ID = "process_id";
+//    public final static String FIELD_ACTIVITY_ID = "activity_id";
+//    public final static String FIELD_ORIGIN = "origin";
+//    public final static String FIELD_REASSIGN_TO = "reassign_to"; //konstan
+
 
     private final static Map<String, Form> formCache = new WeakHashMap<>();
 
     public static Form generateParticipantMasterForm() {
         return generateForm(APPLICATION_ID, WorkflowManager.LATEST, FORM_PARTICIPANT_MASTER);
     }
+//    public static Form generateAssignmentHistoryForm(){
+//        return generateForm(APPLICATION_ID, WorkflowManager.LATEST, FORM_ASSIGNMENT_HISTORY);
+//    }
 
     public static Form generateForm(String appId, String appVersion, String formDefId) {
         AppDefinitionDao appDefinitionDao = (AppDefinitionDao) AppUtil.getApplicationContext().getBean("appDefinitionDao");
@@ -82,14 +94,14 @@ public class Utilities {
      * @param <T>
      * @return
      */
-    public static <T> T getPluginObject(Map<String, Object> elementSelect, PluginManager pluginManager, Map additionalProperties) {
+    public static <T extends PropertyEditable> T getPluginObject(Map<String, Object> elementSelect, PluginManager pluginManager, Map additionalProperties) {
         if(elementSelect == null)
             return null;
 
-        AppDefinition appDef = AppUtil.getCurrentAppDefinition();
-
         String className = (String)elementSelect.get("className");
         Map<String, Object> properties = (Map<String, Object>)elementSelect.get("properties");
+
+        LogUtil.info(Utilities.class.getName(), "properties ["+properties.entrySet().stream().map(e -> e.getKey() + "->" + e.getValue()).collect(Collectors.joining(";"))+"]");
 
         T  plugin = (T) pluginManager.getPlugin(className);
         if(plugin == null) {
@@ -97,10 +109,10 @@ public class Utilities {
             return null;
         }
 
-        if(properties != null && plugin instanceof PropertyEditable) {
-            properties.putAll(additionalProperties);
-            ((PropertyEditable) plugin).setProperties(properties);
-        }
+        properties.forEach(plugin::setProperty);
+        plugin.getProperties().putAll(additionalProperties);
+
+        LogUtil.info(Utilities.class.getName(), Optional.ofNullable(plugin.getProperties()).map(Map::entrySet).orElse(new HashSet<>()).stream().map(e -> e.getKey() + "->" + e.getValue()).collect(Collectors.joining("||")));
 
         return plugin;
     }
