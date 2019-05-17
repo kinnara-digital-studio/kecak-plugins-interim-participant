@@ -1,0 +1,19 @@
+[
+  {
+    title : 'Edit Testing Interim Participant',
+    properties :[
+      {
+        name : 'workflowVariable',
+        label :'Workflow Variable',
+        type : 'textfield',
+        required :'true'
+      },
+      {
+        name : 'variableValue',
+        label :'Variable Value',
+        type : 'textfield',
+        required :'true'
+      }
+    ]
+  }
+]
