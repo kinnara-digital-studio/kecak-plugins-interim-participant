@@ -4,12 +4,8 @@ import org.joget.apps.app.model.DefaultSchedulerPlugin;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.form.dao.FormDataDao;
 import org.joget.apps.form.model.Form;
-import org.joget.apps.form.model.FormData;
 import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
-import org.joget.commons.util.LogUtil;
-import org.joget.plugin.base.PluginManager;
-import org.joget.workflow.model.WorkflowActivity;
 import org.joget.workflow.model.WorkflowAssignment;
 import org.joget.workflow.model.service.WorkflowManager;
 import org.joget.workflow.model.service.WorkflowUserManager;
@@ -22,20 +18,13 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
-import static com.kinnara.kecakplugins.interimparticipant.Utilities.*;
+import static com.kinnara.kecakplugins.interimparticipant.Utilities.CHECKBOX_ACTIVE;
+import static com.kinnara.kecakplugins.interimparticipant.Utilities.FIELD_INTERIM_PARTICIPANT;
 
 public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
-    private final static DateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    DateFormat dateFormat = new SimpleDateFormat("HH:mm");
-    Date now = new Date();
-    ApplicationContext applicationContext = AppUtil.getApplicationContext();
-    FormDataDao formDataDao = (FormDataDao) applicationContext.getBean("formDataDao");
-    // generate master data form
-    Form formParticipantMaster = Utilities.generateParticipantMasterForm();
-    // generate history data form
-//        Form formAssignmentHistory = Utilities.generateAssignmentHistoryForm();
-    WorkflowUserManager workflowUserManager = (WorkflowUserManager) applicationContext.getBean("workflowUserManager");
-    WorkflowManager workflowManager = (WorkflowManager) applicationContext.getBean("workflowManager");
+    private final DateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private final DateFormat dateFormat = new SimpleDateFormat("HH:mm");
+    private final Date now = new Date();
 
     @Override
     public boolean filter(@Nonnull Map<String, Object> map) {
@@ -49,6 +38,15 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
         returnToUser();
     }
     public void reassignToInterim(){
+        ApplicationContext applicationContext = AppUtil.getApplicationContext();
+        FormDataDao formDataDao = (FormDataDao) applicationContext.getBean("formDataDao");
+
+        // generate master data form
+        Form formParticipantMaster = Utilities.generateParticipantMasterForm();
+
+        WorkflowUserManager workflowUserManager = (WorkflowUserManager) applicationContext.getBean("workflowUserManager");
+        WorkflowManager workflowManager = (WorkflowManager) applicationContext.getBean("workflowManager");
+
         // cari orang2 yang hari ini cuti
         FormRowSet formRowsValidDate = formDataDao.find(formParticipantMaster, "WHERE e.customProperties.active = 'true' AND ? BETWEEN e.customProperties.date_from AND e.customProperties.date_to", new String[]{sDateFormat.format(now)}, null, null, null, null);
         if (formRowsValidDate == null || formRowsValidDate.isEmpty()) {
@@ -80,21 +78,6 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
 
             // untuk semua assignment
             for (WorkflowAssignment assignment : assignments) {
-
-                // simpan semua assignment ke history
-//                FormRowSet rowsetHistory = new FormRowSet();
-//                FormRow rowHistory = new FormRow();
-//                rowHistory.put(FIELD_PROCESS_ID,assignment.getProcessId());
-//                rowHistory.put(FIELD_ACTIVITY_ID,assignment.getActivityId());
-//                rowHistory.put(FIELD_ORIGIN,username);
-//                rowHistory.put(FIELD_REASSIGN_TO,interimUsername);
-//                rowsetHistory.add(rowHistory);
-//                formAssignmentHistory.getStoreBinder().store(formAssignmentHistory, rowsetHistory , new FormData());
-
-
-                // reassign semua assignment
-//                LogUtil.info(InterimSchedulerParticipant.class.getName(), "------------" + assignment.getActivityId() + "--" + username + "---" + interimUsername);
-//                workflowManager.assignmentReassign(assignment.getProcessDefId(), assignment.getProcessId(), assignment.getActivityId(), interimUsername, username);
                 // reevaluate assignment
                 workflowManager.reevaluateAssignmentsForActivity(assignment.getActivityId());
             }
@@ -102,6 +85,15 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
     }
 
     public void returnToUser(){
+        ApplicationContext applicationContext = AppUtil.getApplicationContext();
+        FormDataDao formDataDao = (FormDataDao) applicationContext.getBean("formDataDao");
+        // generate master data form
+        Form formParticipantMaster = Utilities.generateParticipantMasterForm();
+        // generate history data form
+//        Form formAssignmentHistory = Utilities.generateAssignmentHistoryForm();
+        WorkflowUserManager workflowUserManager = (WorkflowUserManager) applicationContext.getBean("workflowUserManager");
+        WorkflowManager workflowManager = (WorkflowManager) applicationContext.getBean("workflowManager");
+
         // cari date yang tidak valid
         FormRowSet formRowsNotValid = formDataDao.find(formParticipantMaster, "WHERE e.customProperties.active = ? AND e.customProperties.date_to < ?", new String[]{"true", sDateFormat.format(now)}, null, null, null, null);
         if (formRowsNotValid == null || formRowsNotValid.isEmpty()) {
