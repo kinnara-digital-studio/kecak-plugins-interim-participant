@@ -18,6 +18,8 @@ public class Activator implements BundleActivator {
         registrationList.add(context.registerService(InterimMasterDataParticipant.class.getName(), new InterimMasterDataParticipant(), null));
         registrationList.add(context.registerService(InterimWorkflowVariableParticipant.class.getName(), new InterimWorkflowVariableParticipant(), null));
         registrationList.add(context.registerService(WorkflowVariablesApi.class.getName(), new WorkflowVariablesApi(), null));
+        registrationList.add(context.registerService(InterimMultirowLoadBinder.class.getName(), new InterimMultirowLoadBinder(), null));
+
     }
 
     public void stop(BundleContext context) {

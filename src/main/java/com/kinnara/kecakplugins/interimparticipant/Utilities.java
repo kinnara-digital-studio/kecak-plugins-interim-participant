@@ -5,7 +5,9 @@ import org.joget.apps.app.dao.FormDefinitionDao;
 import org.joget.apps.app.model.AppDefinition;
 import org.joget.apps.app.model.FormDefinition;
 import org.joget.apps.app.service.AppUtil;
+import org.joget.apps.form.dao.FormDataDao;
 import org.joget.apps.form.model.Form;
+import org.joget.apps.form.model.FormRowSet;
 import org.joget.apps.form.service.FormService;
 import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
@@ -15,7 +17,10 @@ import org.joget.workflow.model.WorkflowActivity;
 import org.joget.workflow.model.service.WorkflowManager;
 import org.springframework.context.ApplicationContext;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,15 +38,26 @@ public class Utilities {
 //    public final static String FIELD_REASSIGN_TO = "reassign_to"; //konstan
 
 
+    private final static DateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private final static Map<String, Form> formCache = new WeakHashMap<>();
 
+    /**
+     * Generate Participant Master Form
+     *
+     * @return
+     */
     public static Form generateParticipantMasterForm() {
         return generateForm(APPLICATION_ID, WorkflowManager.LATEST, FORM_PARTICIPANT_MASTER);
     }
-//    public static Form generateAssignmentHistoryForm(){
-//        return generateForm(APPLICATION_ID, WorkflowManager.LATEST, FORM_ASSIGNMENT_HISTORY);
-//    }
 
+    /**
+     * Generate Form
+     *
+     * @param appId
+     * @param appVersion
+     * @param formDefId
+     * @return
+     */
     public static Form generateForm(String appId, String appVersion, String formDefId) {
         AppDefinitionDao appDefinitionDao = (AppDefinitionDao) AppUtil.getApplicationContext().getBean("appDefinitionDao");
         return generateForm(
@@ -49,12 +65,19 @@ public class Utilities {
                         ? appDefinitionDao.getPublishedVersion(appId) : Long.valueOf(appVersion)), formDefId);
     }
 
+    /**
+     * Generate Form
+     *
+     * @param appDef
+     * @param formDefId
+     * @return
+     */
     public static Form generateForm(@Nullable AppDefinition appDef, String formDefId) {
-        if(appDef == null)
+        if (appDef == null)
             return null;
 
         // check in cache
-        if(formCache.containsKey(formDefId))
+        if (formCache.containsKey(formDefId))
             return formCache.get(formDefId);
 
         // proceed without cache
@@ -69,7 +92,7 @@ public class Utilities {
             FormDefinition formDef = formDefinitionDao.loadById(formDefId, appDef);
             if (formDef != null) {
                 String json = formDef.getJson();
-                Form form = (Form)formService.createElementFromJson(json);
+                Form form = (Form) formService.createElementFromJson(json);
 
                 // put in cache if possible
                 formCache.put(formDefId, form);
@@ -90,21 +113,20 @@ public class Utilities {
 
     /**
      * Generate plugins
+     *
      * @param elementSelect
      * @param <T>
      * @return
      */
     public static <T extends PropertyEditable> T getPluginObject(Map<String, Object> elementSelect, PluginManager pluginManager, Map additionalProperties) {
-        if(elementSelect == null)
+        if (elementSelect == null)
             return null;
 
-        String className = (String)elementSelect.get("className");
-        Map<String, Object> properties = (Map<String, Object>)elementSelect.get("properties");
+        String className = (String) elementSelect.get("className");
+        Map<String, Object> properties = (Map<String, Object>) elementSelect.get("properties");
 
-        LogUtil.info(Utilities.class.getName(), "properties ["+properties.entrySet().stream().map(e -> e.getKey() + "->" + e.getValue()).collect(Collectors.joining(";"))+"]");
-
-        T  plugin = (T) pluginManager.getPlugin(className);
-        if(plugin == null) {
+        T plugin = (T) pluginManager.getPlugin(className);
+        if (plugin == null) {
             LogUtil.warn(Utilities.class.getName(), "Error generating plugin [" + className + "]");
             return null;
         }
@@ -112,8 +134,68 @@ public class Utilities {
         properties.forEach(plugin::setProperty);
         plugin.getProperties().putAll(additionalProperties);
 
-        LogUtil.info(Utilities.class.getName(), Optional.ofNullable(plugin.getProperties()).map(Map::entrySet).orElse(new HashSet<>()).stream().map(e -> e.getKey() + "->" + e.getValue()).collect(Collectors.joining("||")));
-
         return plugin;
+    }
+
+    @Nonnull
+    static FormRowSet getInterimParticipantRows(String originalParticipant) {
+        ApplicationContext applicationContext = AppUtil.getApplicationContext();
+        FormDataDao formDataDao = (FormDataDao) applicationContext.getBean("formDataDao");
+
+        Form formParticipantMaster = Utilities.generateParticipantMasterForm();
+
+        // if Interim Participant app is not installed
+        if (formParticipantMaster == null) {
+            LogUtil.warn(Utilities.class.getName(), "Interim Participant application is not installed");
+
+            // return empty Row Set
+            return new FormRowSet();
+        }
+
+        final Date now = new Date();
+
+        // retrieve interim participant from master data
+        return Optional
+                // get from master data
+                .ofNullable(formDataDao.find(formParticipantMaster, "WHERE e.customProperties." + Utilities.FIELD_ORIGINAL_PARTICIPANT + " LIKE '%'||?||'%' AND e.customProperties.active = 'true' AND ? BETWEEN e.customProperties.date_from AND e.customProperties.date_to", new String[]{originalParticipant, sDateFormat.format(now)}, null, null, null, null))
+                .orElse(new FormRowSet())
+                .stream()
+
+                // check if current actual user is in the mapping data
+                .filter(formRow -> Arrays.asList(Optional.ofNullable(formRow.getProperty(Utilities.FIELD_ORIGINAL_PARTICIPANT)).orElse("").split(";")).contains(originalParticipant))
+                .collect(Collectors.toCollection(FormRowSet::new));
+    }
+
+    /**
+     * Get Interim Participant
+     *
+     * @param originalParticipant original participant username
+     * @return interim participant username
+     */
+    @Nonnull
+    static List<String> getInterimParticipantUsername(String originalParticipant) {
+        FormRowSet interimParticipantRows = getInterimParticipantRows(originalParticipant);
+
+        // retrieve interim participant from master data
+        List<String> interimParticipant = interimParticipantRows
+                .stream()
+
+                // get the interim user(s)
+                .map(formRow -> formRow.getProperty(Utilities.FIELD_INTERIM_PARTICIPANT))
+
+                .filter(Objects::nonNull)
+                .map(s -> s.split(";"))
+                .flatMap(Arrays::stream)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+
+        if (interimParticipant.isEmpty()) {
+            // no interim user(s), return the current actual user
+            return Collections.singletonList(originalParticipant);
+        } else {
+            // interim user(s) found
+            LogUtil.info(Utilities.class.getName(), "Switching user [" + originalParticipant + "] with [" + interimParticipant + "]");
+            return interimParticipant;
+        }
     }
 }
