@@ -1,6 +1,5 @@
 package com.kinnara.kecakplugins.interimparticipant;
 
-import org.joget.apps.app.model.DefaultSchedulerPlugin;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.form.dao.FormDataDao;
 import org.joget.apps.form.model.Form;
@@ -9,6 +8,8 @@ import org.joget.apps.form.model.FormRowSet;
 import org.joget.workflow.model.WorkflowAssignment;
 import org.joget.workflow.model.service.WorkflowManager;
 import org.joget.workflow.model.service.WorkflowUserManager;
+import org.kecak.apps.app.model.DefaultSchedulerPlugin;
+import org.quartz.JobExecutionContext;
 import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nonnull;
@@ -26,17 +27,6 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
     private final DateFormat dateFormat = new SimpleDateFormat("HH:mm");
     private final Date now = new Date();
 
-    @Override
-    public boolean filter(@Nonnull Map<String, Object> map) {
-//        return "00:00".equals(dateFormat.format(new Date()));
-        return true;
-    }
-
-    @Override
-    public void jobRun(@Nonnull Map<String, Object> map) {
-        reassignToInterim();
-        returnToUser();
-    }
     public void reassignToInterim(){
         ApplicationContext applicationContext = AppUtil.getApplicationContext();
         FormDataDao formDataDao = (FormDataDao) applicationContext.getBean("formDataDao");
@@ -142,5 +132,11 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
     @Override
     public String getPropertyOptions() {
         return "";
+    }
+
+    @Override
+    public void jobRun(@Nonnull JobExecutionContext jobExecutionContext, @Nonnull Map<String, Object> map) {
+        reassignToInterim();
+        returnToUser();
     }
 }
