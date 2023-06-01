@@ -5,6 +5,7 @@ import org.joget.apps.form.dao.FormDataDao;
 import org.joget.apps.form.model.Form;
 import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
+import org.joget.plugin.base.PluginManager;
 import org.joget.workflow.model.WorkflowAssignment;
 import org.joget.workflow.model.service.WorkflowManager;
 import org.joget.workflow.model.service.WorkflowUserManager;
@@ -18,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import static com.kinnara.kecakplugins.interimparticipant.Utilities.CHECKBOX_ACTIVE;
 import static com.kinnara.kecakplugins.interimparticipant.Utilities.FIELD_INTERIM_PARTICIPANT;
@@ -111,7 +113,10 @@ public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
 
     @Override
     public String getVersion() {
-        return getClass().getPackage().getImplementationVersion();
+        PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
+        ResourceBundle resourceBundle = pluginManager.getPluginMessageBundle(getClassName(), "/messages/BuildNumber");
+        String buildNumber = resourceBundle.getString("buildNumber");
+        return buildNumber;
     }
 
     @Override

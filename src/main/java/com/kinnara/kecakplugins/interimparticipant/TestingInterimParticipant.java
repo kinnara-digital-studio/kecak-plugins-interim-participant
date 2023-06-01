@@ -1,6 +1,7 @@
 package com.kinnara.kecakplugins.interimparticipant;
 
 import org.joget.apps.app.service.AppUtil;
+import org.joget.plugin.base.PluginManager;
 import org.joget.workflow.model.DefaultParticipantPlugin;
 import org.joget.workflow.model.WorkflowActivity;
 import org.joget.workflow.model.service.WorkflowManager;
@@ -9,6 +10,7 @@ import org.springframework.context.ApplicationContext;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 public class TestingInterimParticipant extends DefaultParticipantPlugin {
     @Override
@@ -18,7 +20,10 @@ public class TestingInterimParticipant extends DefaultParticipantPlugin {
 
     @Override
     public String getVersion() {
-        return getClass().getPackage().getImplementationVersion();
+        PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
+        ResourceBundle resourceBundle = pluginManager.getPluginMessageBundle(getClassName(), "/messages/BuildNumber");
+        String buildNumber = resourceBundle.getString("buildNumber");
+        return buildNumber;
     }
 
     @Override

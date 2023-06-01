@@ -1,8 +1,11 @@
 package com.kinnara.kecakplugins.interimparticipant;
 
+import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.form.model.*;
+import org.joget.plugin.base.PluginManager;
 
 import javax.annotation.Nonnull;
+import java.util.ResourceBundle;
 
 /**
  * @author aristo
@@ -26,7 +29,10 @@ public class InterimMultirowLoadBinder extends FormBinder
 
     @Override
     public String getVersion() {
-        return getClass().getPackage().getImplementationVersion();
+        PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
+        ResourceBundle resourceBundle = pluginManager.getPluginMessageBundle(getClassName(), "/messages/BuildNumber");
+        String buildNumber = resourceBundle.getString("buildNumber");
+        return buildNumber;
     }
 
     @Override
