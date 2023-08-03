@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class InterimMasterDataParticipant extends DefaultParticipantPlugin {
     @Override
     public String getName() {
-        return "Interim Master Data Participant";
+        return "Interim Participant";
     }
 
     @Override
