@@ -1,4 +1,4 @@
-package com.kinnara.kecakplugins.interimparticipant;
+package com.kinnarastudio.kecakplugins.interimparticipant;
 
 import org.joget.apps.app.dao.AppDefinitionDao;
 import org.joget.apps.app.dao.FormDefinitionDao;

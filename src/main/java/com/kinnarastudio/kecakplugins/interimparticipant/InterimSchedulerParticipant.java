@@ -1,4 +1,4 @@
-package com.kinnara.kecakplugins.interimparticipant;
+package com.kinnarastudio.kecakplugins.interimparticipant;
 
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.form.dao.FormDataDao;
@@ -21,8 +21,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import static com.kinnara.kecakplugins.interimparticipant.Utilities.CHECKBOX_ACTIVE;
-import static com.kinnara.kecakplugins.interimparticipant.Utilities.FIELD_INTERIM_PARTICIPANT;
+import static com.kinnarastudio.kecakplugins.interimparticipant.Utilities.CHECKBOX_ACTIVE;
+import static com.kinnarastudio.kecakplugins.interimparticipant.Utilities.FIELD_INTERIM_PARTICIPANT;
 
 public class InterimSchedulerParticipant extends DefaultSchedulerPlugin {
     private final DateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd");

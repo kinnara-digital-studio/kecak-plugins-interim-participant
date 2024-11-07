@@ -1,4 +1,4 @@
-package com.kinnara.kecakplugins.interimparticipant;
+package com.kinnarastudio.kecakplugins.interimparticipant;
 
 public class RestApiException extends Exception {
     private final int responseCode;

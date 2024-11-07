@@ -1,4 +1,4 @@
-package com.kinnara.kecakplugins.interimparticipant;
+package com.kinnarastudio.kecakplugins.interimparticipant;
 
 import org.joget.apps.app.service.AppUtil;
 import org.joget.commons.util.LogUtil;
