@@ -8,9 +8,9 @@
     <name>kecak-plugins-interim-participant</name>
     <url>http://www.kecak.org</url>
     <scm>
-        <connection>scm:git:ssh://git@gitlab.com:kinnarastudio/kecak-plugins-interim-participant.git</connection>
-        <developerConnection>scm:git:ssh://git@gitlab.com:kinnarastudio/kecak-plugins-interim-participant.git</developerConnection>
-        <url>ssh://git@gitlab.com:kinnarastudio/kecak-plugins-interim-participant.git</url>
+        <connection>scm:git:ssh://git@github.com:kinnara-digital-studio/kecak-plugins-interim-participant.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:kinnara-digital-studio/kecak-plugins-interim-participant.git</developerConnection>
+        <url>ssh://git@github.com:kinnara-digital-studio/kecak-plugins-interim-participant.git</url>
         <tag>HEAD</tag>
     </scm>
     <build>
